@@ -1,0 +1,30 @@
+[{
+    text:'MPS',
+    expanded: true,
+    iconCls: 'blist',
+    children:[{
+        text:'Dashborad',
+        id:'dashborad',
+        leaf:true,
+        iconCls: 'bmenu'
+    },{
+        text:'Create Group/Part',
+        id:'create-group-part',
+        leaf:true,
+        iconCls: 'bmenu'
+    }]
+},{
+    text:'Admin',
+    iconCls: 'blist',
+    children:[{
+        text:'Create User',
+        id:'createUser',
+        leaf:true,
+        iconCls: 'bmenu'
+    },{
+        text:'User List',
+        id:'userList',
+        leaf:true,
+        iconCls: 'bmenu'
+    }]
+}]

@@ -1,0 +1,24 @@
+{
+  "name": "mps-gui",
+  "version": "1.0.0",
+  "description": "Master Planing System",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . MPS-GUI --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/foamtecintl/mps-gui.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/foamtecintl/mps-gui/issues"
+  },
+  "homepage": "https://github.com/foamtecintl/mps-gui#readme",
+  "devDependencies": {
+    "electron": "^3.0.0-beta.3",
+    "jquery": "^3.3.1"
+  }
+}
