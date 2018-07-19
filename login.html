@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="./ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="./css/custom.css" />
+  <script src="./ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="./ext-3.4.1/ext-all.js"></script>
+</head>
+<body>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="./js/config.js"></script>
+  <script>
+    Ext.onReady(function() {
+
+      var formLogin = new Ext.FormPanel({
+        labelWidth: 105,
+        frame:true,
+        defaults: {width: 230},
+        defaultType: 'textfield',
+        items: [
+          {
+            fieldLabel: 'Username',
+            name: 'username',
+            allowBlank:false,
+            id: 'username'
+          },
+          {
+            fieldLabel: 'Password',
+            name: 'password',
+            allowBlank:false,
+            inputType: 'password',
+            id: 'password'
+          }
+        ],
+        buttons: [
+          {
+            text: 'Login',
+            handler: function() {
+              myMask.show();
+              var dataLogin = {
+                username: $('#username').val(),
+                password: $('#password').val()
+              }
+
+              $.ajax({
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: "json",
+                url: api_url + '/api/security/login',
+                data: JSON.stringify(dataLogin),
+                success: function(result) {
+                  localStorage.setItem('token' , 'Bearer ' + result.token);
+                  localStorage.setItem('username' , result.username);
+                  localStorage.setItem('role' , result.role);
+                  window.location.href = 'index.html';
+                },
+                error: function(err) {
+                  myMask.hide();
+                  var resErr = err.responseJSON;
+                  Ext.MessageBox.show({
+                    title: 'Warning',
+                    msg: resErr.message,
+                    buttons: Ext.MessageBox.OK,
+                    animEl: 'mb9',
+                    icon: Ext.MessageBox.WARNING
+                  });
+                  formLogin.getForm().reset();
+                }
+              })
+            }
+          }
+        ]
+      });
+
+      var login_panel = {
+        id: 'login-panel',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth:.3,
+            layout: 'form',
+            items: [{ html: '<div></div>' }]
+          },
+          {
+            columnWidth:.4,
+            layout: 'form',
+            items: [{ html: '<div align="center"><img src="./images/login-icon.jpg" alt="login face"><br><br></div>' },formLogin]
+          },
+          {
+            columnWidth:.3,
+            layout: 'form',
+            items: [{ html: '<div></div>' }]
+          }
+        ]
+      };
+
+      new Ext.Viewport({
+        layout: 'border',
+        renderTo: 'body',
+        items: [
+          {
+            id: 'content-panel',
+            region: 'center',
+            layout: 'card',
+            margins: '2 5 5 0',
+            activeItem: 0,
+            border: false,
+            items: [login_panel]
+          }
+        ]
+      });
+    });
+  </script>
+</body>
+</html>
