@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+
+      var textSearch = getUrlParameter('search');
+
+      var create_group_part_panel = {
+        id: 'create-group-part-panel',
+        title: 'Create Group/Part',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: .3,
+            html: '<div id="formGroup"></div>'
+          },
+          {
+            columnWidth: .7,
+            html: '<div id="gridGroup"></div>'
+          }
+        ]
+      };
+
+      renderTemplate(create_group_part_panel);
+
+      var formCreateGroup = new Ext.FormPanel({
+        renderTo: 'formGroup',
+        labelWidth: 75,
+        title: 'Add Group',
+        frame:true,
+        defaults: {width: 150},
+        items: [
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Group Name',
+            name: 'group',
+            emptyText:'Enter group name ...',
+            allowBlank: false,
+            id: 'groupName',
+          },
+          {
+            xtype: 'combo',
+            store: [
+              'Electronic',
+              'Automotive',
+              'General'
+            ],
+            emptyText:'Select a type...',
+            fieldLabel: 'Type Name',
+            id: 'typeName'
+          }
+        ],
+        buttons: [{
+          text: 'Add Group',
+          handler: function() {
+            formCreateGroup.getForm().submit();
+            var groupNameF = $('#groupName').val();
+            var typeNameF = $('#typeName').val();
+
+            if(groupNameF.length < 1 || groupNameF.indexOf('Enter group name ...') >= 0) {
+              return false;
+            }
+
+            if(typeNameF.length < 1 || typeNameF.indexOf('Select a type...') >= 0) {
+              return false;
+            }
+
+            var dataGroup = {
+              groupName: groupNameF,
+              groupType: typeNameF
+            }
+
+            Ext.MessageBox.show({
+              msg: 'Saving your data, please wait...',
+              progressText: 'Saving...',
+              width:300,
+              wait:true,
+              waitConfig: {interval:200},
+              icon:'ext-mb-download',
+              animEl: 'mb7'
+            });
+
+            $.ajax({
+              type: 'POST',
+              headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Authorization': localStorage.getItem('token')
+              },
+              dataType: "json",
+              url: api_url + '/api/mps/creategroup',
+              data: JSON.stringify(dataGroup),
+              success: function(result) {
+                Ext.MessageBox.hide();
+                window.location.href = './create-group.html?search=' + textSearch;
+              },
+              error: function(err) {
+                Ext.MessageBox.hide();
+                var resErr = err.responseJSON;
+                if(resErr.message.indexOf("save fail") >= 0) {
+                  Ext.MessageBox.show({
+                    title: 'Warning',
+                    msg: resErr.message,
+                    buttons: Ext.MessageBox.OK,
+                    animEl: 'mb9',
+                    icon: Ext.MessageBox.WARNING
+                  });
+                }
+                if(resErr.message.indexOf("token fail") >= 0) {
+                  localStorage.clear();
+                  window.location.href = '/login.html';
+                }
+              }
+            });
+          }
+        },{
+          text: 'Clear',
+          handler: function() {
+            formCreateGroup.getForm().reset();
+          }
+        }]
+      });
+
+      var store = new Ext.data.JsonStore({
+        fields: [
+          { name: 'id' },
+          { name: 'no' },
+          { name: 'groupName' },
+          { name: 'typeName' },
+          { name: 'totalPart' }
+        ],
+        root: 'groups',
+        totalProperty: 'totalGroup',
+        proxy: new Ext.data.HttpProxy({
+          method: 'GET',
+          type: 'json',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': localStorage.getItem('token')
+          },
+          url: api_url + '/api/mps/searchgroupslimit'
+        })
+      });
+
+      new Ext.grid.GridPanel({
+        renderTo: 'gridGroup',
+        height:500,
+        store: store,
+        trackMouseOver:false,
+        disableSelection:true,
+        loadMask: true,
+        title:'Group list',
+        columns:[
+          {
+            id: 'id',
+            header: 'id',
+            dataIndex: 'id',
+            width    : 10,
+            hidden: true
+          },
+          {
+            id: 'no',
+            header: '#',
+            dataIndex: 'no',
+            width    : 50
+          },
+          {
+            id: 'groupName',
+            header: 'Group Name',
+            dataIndex: 'groupName',
+            sortable: true,
+            width    : 200
+          },
+          {
+            id: 'typeName',
+            header: 'Type Name',
+            dataIndex: 'typeName',
+            width    : 150
+          },
+          {
+            id: 'totalPart',
+            header: 'Total Part',
+            dataIndex: 'totalPart',
+            width    : 130
+          },
+          {
+            xtype: 'actioncolumn',
+            header: 'Add Part',
+            width: 90,
+            items: [
+              {
+                icon: '../images/icon/rss_go.png',
+                tooltip: 'go to infomation',
+                handler: function(grid, rowIndex, colIndex) {
+                  var rec = store.getAt(rowIndex);
+                }
+              }
+            ]
+          }
+        ],
+        bbar: new Ext.PagingToolbar({
+          pageSize: 20,
+          store: store,
+          displayInfo: true,
+          displayMsg: 'Displaying data {0} - {1} of {2}',
+          emptyMsg: "No data to display",
+          items: ['-',
+            {
+              xtype: 'textfield',
+              fieldLabel: 'Search',
+              name: 'search',
+              id: 'search',
+              value: textSearch
+            },
+            {
+              xtype: 'button',
+              name: 'btnSearch',
+              id: 'btnSearch',
+              text: 'Search',
+              pressed: true,
+              handler: function() {
+                window.location.href = './create-group.html?search=' + $('#search').val();
+              }
+            }
+          ]
+        })
+      });
+
+      store.baseParams = {searchText: $('#search').val()};
+      store.load({params:{start:0, limit:20, searchText: $('#search').val()}});
+    });
+  </script>
+</body>
+</html>

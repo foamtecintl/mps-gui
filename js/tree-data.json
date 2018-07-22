@@ -9,7 +9,7 @@
         iconCls: 'bmenu'
     },{
         text:'Create Group/Part',
-        id:'create-group-part',
+        id:'create-group',
         leaf:true,
         iconCls: 'bmenu'
     }]
