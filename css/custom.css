@@ -1,7 +1,9 @@
 .blist {
   background-image: url(../images/icon/list-items.gif) !important;
 }
-
 .bmenu {
   background-image: url(../images/icon/menu-show.gif) !important;
+}
+.user {
+  background-image:url(../images/icon/user.gif) !important
 }

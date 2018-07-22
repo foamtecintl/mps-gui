@@ -5,18 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>MPS</title>
-  <link rel="stylesheet" href="./ext-3.4.1/resources/css/ext-all.css" />
-  <link rel="stylesheet" href="./css/custom.css" />
-  <script src="./ext-3.4.1/adapter/ext/ext-base.js"></script>
-  <script src="./ext-3.4.1/ext-all.js"></script>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
 </head>
 <body>
   <div id="header"></div>
   <div id="body"></div>
   <div style="display:none;">
-    <div id="home-div"
-    >
-      <div align="center"><img src="images/logo.jpg" /></div>
+    <div id="home-div">
+      <div align="center"><img src="../images/logo.jpg" /></div>
       <div>
         <h2>Welcome to Foamtec International !</h2>
         <p>Foamtec International is one of the industry’s prime innovators and suppliers, 
@@ -37,14 +36,20 @@
     </div>
   </div>
   <script>window.$ = window.jQuery = require('jquery');</script>
-  <script src="./js/config.js"></script>
-  <script src="./js/mps/home.js"></script>
-  <script src="./js/mps/dashborad.js"></script>
-  <script src="./js/mps/create-group-part.js"></script>
-  <script src="./js/template.js"></script>
+  <script src="../js/template.js"></script>
   <script>
     Ext.onReady(function() {
-      
+
+      var home_panel = {
+        id: 'home-panel',
+        title: 'Home',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        contentEl: 'home-div'
+      };
+
+      renderTemplate(home_panel);
     });
   </script>
 </body>
