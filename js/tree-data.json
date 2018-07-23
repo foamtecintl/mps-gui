@@ -8,6 +8,11 @@
         leaf:true,
         iconCls: 'bmenu'
     },{
+        text:'Create Forecast',
+        id:'select-forecast',
+        leaf:true,
+        iconCls: 'bmenu'
+    },{
         text:'Create Group/Part',
         id:'create-group',
         leaf:true,

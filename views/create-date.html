@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <link rel="stylesheet" href="../ext-3.4.1/ux/css/LockingGridView.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+  <script src="../ext-3.4.1/ux/LockingGridView.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+      
+      myMask.show();
+
+      var idParam = getUrlParameter('id');
+
+      var create_date = {
+        id: 'create-date-panel',
+        title: 'Select Date',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: 0.1,
+            html: '<div>&nbsp;</div>'
+          },
+          {
+            columnWidth: 0.3,
+            html: '<div id="gridGroup"></div>'
+          },
+          {
+            columnWidth: 0.1,
+            html: '<div>&nbsp;</div>'
+          },
+          {
+            columnWidth: 0.4,
+            html: '<div id="dataGroup"></div>'
+          }
+        ]
+      };
+
+      renderTemplate(create_date);
+      
+      var storeData = {
+        allDates: [
+          {id: 1, date1: 'Date-1', data: ''},
+          {id: 2, date1: 'Date-2', data: ''},
+          {id: 3, date1: 'Date-3', data: ''},
+          {id: 4, date1: 'Date-4', data: ''},
+          {id: 5, date1: 'Date-5', data: ''},
+          {id: 6, date1: 'Date-6', data: ''},
+          {id: 7, date1: 'Date-7', data: ''},
+          {id: 8, date1: 'Date-8', data: ''},
+          {id: 9, date1: 'Date-9', data: ''},
+          {id: 10, date1: 'Date-10', data: ''},
+          {id: 11, date1: 'Date-11', data: ''},
+          {id: 12, date1: 'Date-12', data: ''},
+          {id: 13, date1: 'Date-13', data: ''},
+          {id: 14, date1: 'Date-14', data: ''},
+          {id: 15, date1: 'Date-15', data: ''},
+          {id: 16, date1: 'Date-16', data: ''},
+          {id: 17, date1: 'Date-17', data: ''},
+          {id: 18, date1: 'Date-18', data: ''},
+          {id: 19, date1: 'Date-19', data: ''},
+          {id: 20, date1: 'Date-20', data: ''}
+        ]
+      }
+
+      var store = new Ext.data.JsonStore({
+        fields: [
+          { name: 'date1' },
+          { name: 'data' }
+        ],
+        root: 'allDates'
+      });
+
+      store.loadData(storeData);
+
+      function formatDate(value){
+        return value ? value.dateFormat('M d, Y') : '';
+      }
+
+      var grid = new Ext.grid.EditorGridPanel({
+        renderTo: 'gridGroup',
+        height:500,
+        store: store,
+        title:'Create Date Forecast',
+        clicksToEdit: 1,
+        colModel: new Ext.ux.grid.LockingColumnModel([
+          {
+            id: 'date',
+            header: 'Date',
+            dataIndex: 'date1',
+            width    : 95,
+            locked: true
+          },
+          {
+            header: 'Data',
+            dataIndex: 'data',
+            width: 150,
+            renderer: formatDate,
+            xtype: 'datecolumn',
+            editor: {
+              format: 'm/d/y',
+              xtype: 'datefield',
+              minValue: new Date()
+            },
+          }
+        ]),
+        view: new Ext.ux.grid.LockingGridView({}),
+        listeners: {
+          afteredit: function(e) {
+            var val = e.value;
+          }
+        }
+      });
+
+      var form = new Ext.FormPanel({
+        renderTo: 'dataGroup',
+        labelWidth: 75,
+        title: 'Detail',
+        frame:true,
+        defaults: {width: 300},
+        items: [
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Group Name',
+            name: 'groupName',
+            allowBlank: false,
+            id: 'groupName',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Group Type',
+            name: 'groupType',
+            allowBlank: false,
+            id: 'groupType',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Total Part',
+            name: 'totalPart',
+            allowBlank: false,
+            id: 'totalPart',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          }
+        ],
+        buttons: [{
+          text: 'Create Date Forecast',
+          handler: function() {
+            var dataTable = grid.store.data;
+            var i = 0;
+            var reqData = '';
+            for(i = 0; i < 20; i++) {
+              var dataDate = dataTable.items[i].data.data;
+              if(dataDate != '') {
+                reqData = reqData + (dataDate.getMonth() + 1) + '/' + dataDate.getDate() + '/' +  dataDate.getFullYear() + ',';
+              }
+            }
+            window.location.href = 'create-forecast.html?id=' + idParam + '&dateT=' + reqData;
+          }
+        }]
+      });
+
+      $.ajax({
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': localStorage.getItem('token')
+        },
+        dataType: 'json',
+        url: api_url + '/api/mps/findgroupbyid',
+        data: JSON.stringify({'id': idParam}),
+        success: function(result) {
+          $('#groupName').val(result.groupName);
+          $('#groupType').val(result.groupType);
+          $('#totalPart').val(result.totalPart);
+          myMask.hide();
+        },
+        error: function(err) {
+          myMask.hide();
+          var resErr = err.responseJSON;
+          if(resErr.message.indexOf('token fail') >= 0) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+          }
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+
+      var textSearch = getUrlParameter('search');
+      var idParam = getUrlParameter('id');
+
+      var create_part_panel = {
+        id: 'create-part-panel',
+        title: 'Create Part',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: .3,
+            html: '<div id="formPart"></div>'
+          },
+          {
+            columnWidth: .7,
+            html: '<div id="gridPart"></div>'
+          }
+        ]
+      };
+
+      renderTemplate(create_part_panel);
+
+      var formCreatePart = new Ext.FormPanel({
+        renderTo: 'formPart',
+        labelWidth: 75,
+        title: 'Add Part',
+        frame:true,
+        defaults: {width: 150},
+        items: [
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Group Name',
+            name: 'groupName',
+            allowBlank: false,
+            id: 'groupName',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Group Type',
+            name: 'groupType',
+            allowBlank: false,
+            id: 'groupType',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Part Number',
+            name: 'part',
+            allowBlank: false,
+            id: 'part',
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Part Name',
+            name: 'partName',
+            allowBlank: false,
+            id: 'partName',
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Code SAP',
+            name: 'codeSap',
+            allowBlank: false,
+            id: 'codeSap',
+          }
+        ],
+        buttons: [{
+          text: 'Add Part',
+          id:'btnAddPart',
+          handler: function() {
+            formCreatePart.getForm().submit();
+            var partP = $('#part').val();
+            var partNameP = $('#partName').val();
+            var codeSapP = $('#codeSap').val();
+
+            if(partP.length < 1) {
+              return false;
+            }
+            if(partNameP.length < 1) {
+              return false;
+            }
+            if(codeSapP.length < 1) {
+              return false;
+            }
+
+            var dataPart = {
+              id: idParam,
+              partNo: partP,
+              partName: partNameP,
+              codeSap: codeSapP
+            }
+
+            Ext.MessageBox.show({
+              msg: 'Saving your data, please wait...',
+              progressText: 'Saving...',
+              width:300,
+              wait:true,
+              waitConfig: {interval:200},
+              icon:'ext-mb-download',
+              animEl: 'mb7'
+            });
+
+            $.ajax({
+              type: 'POST',
+              headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Authorization': localStorage.getItem('token')
+              },
+              dataType: "json",
+              url: api_url + '/api/mps/createpart',
+              data: JSON.stringify(dataPart),
+              success: function(result) {
+                console.log(result.message)
+                Ext.MessageBox.hide();
+                window.location.href = './create-part.html?id='+ idParam + '&search=';
+              },
+              error: function(err) {
+                Ext.MessageBox.hide();
+                var resErr = err.responseJSON;
+                Ext.MessageBox.show({
+                  title: 'Warning',
+                  msg: resErr.message,
+                  buttons: Ext.MessageBox.OK,
+                  animEl: 'mb9',
+                  icon: Ext.MessageBox.WARNING
+                });
+                if(resErr.message.indexOf("token fail") >= 0) {
+                  localStorage.clear();
+                  window.location.href = '../login.html';
+                }
+              }
+            });
+          }
+        },{
+          text: 'Clear',
+          handler: function() {
+            formCreatePart.getForm().reset();
+          }
+        }]
+      });
+
+      var store = new Ext.data.JsonStore({
+        fields: [
+          { name: 'id' },
+          { name: 'no' },
+          { name: 'partNumber' },
+          { name: 'partName' },
+          { name: 'codeSap' }
+        ],
+        root: 'parts',
+        totalProperty: 'totalParts',
+        proxy: new Ext.data.HttpProxy({
+          method: 'GET',
+          type: 'json',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': localStorage.getItem('token')
+          },
+          url: api_url + '/api/mps/searchproductsbygrouplimit'
+        })
+      });
+
+      new Ext.grid.GridPanel({
+        renderTo: 'gridPart',
+        height:540,
+        store: store,
+        trackMouseOver:false,
+        disableSelection:true,
+        loadMask: true,
+        title:'Part list',
+        columns:[
+          {
+            id: 'id',
+            header: 'id',
+            dataIndex: 'id',
+            width    : 10,
+            hidden: true
+          },
+          {
+            id: 'no',
+            header: '#',
+            dataIndex: 'no',
+            width    : 50
+          },
+          {
+            id: 'partNumber',
+            header: 'Part Number',
+            dataIndex: 'partNumber',
+            width    : 200
+          },
+          {
+            id: 'partName',
+            header: 'Part Name',
+            dataIndex: 'partName',
+            width    : 140
+          },
+          {
+            id: 'codeSap',
+            header: 'Code SAP',
+            dataIndex: 'codeSap',
+            width    : 170
+          },
+          {
+            xtype: 'actioncolumn',
+            header: 'Remove',
+            width: 60,
+            items: [
+              {
+                icon: '../images/icon/delete.gif',
+                tooltip: 'go to infomation',
+                handler: function(grid, rowIndex, colIndex) {
+                  var rec = store.getAt(rowIndex);
+                  Ext.MessageBox.show({
+                    title: 'Confirm',
+                    msg: 'Are you sure you want to delete part ' + rec.get('partNumber') + '?',
+                    buttons: Ext.MessageBox.OKCANCEL,
+                    animEl: 'mb9',
+                    icon: Ext.MessageBox.QUESTION,
+                    fn: function(btn){
+                      if(btn == 'ok'){
+                        myMask.show();
+                        $.ajax({
+                          type: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json; charset=utf-8',
+                            'Authorization': localStorage.getItem('token')
+                          },
+                          dataType: 'json',
+                          url: api_url + '/api/mps/deletepart',
+                          data: JSON.stringify({'id': rec.get('id')}),
+                          success: function(result) {
+                            myMask.hide();
+                            window.location.href = './create-part.html?id=' + idParam + '&search=';
+                          },
+                          error: function(err) {
+                            myMask.hide();
+                            var resErr = err.responseJSON;
+                            if(resErr.message.indexOf('token fail') >= 0) {
+                              localStorage.clear();
+                              window.location.href = '../login.html';
+                            }
+                          }
+                        });
+                      }
+                    }
+                  });
+                }
+              }
+            ]
+          }
+        ],
+        bbar: new Ext.PagingToolbar({
+          pageSize: 20,
+          store: store,
+          displayInfo: true,
+          displayMsg: 'Displaying data {0} - {1} of {2}',
+          emptyMsg: "No data to display",
+          items: [
+            {
+              xtype: 'textfield',
+              fieldLabel: 'Search',
+              name: 'search',
+              id: 'search',
+              value: textSearch
+            },
+            {
+              xtype: 'button',
+              name: 'btnSearch',
+              id: 'btnSearch',
+              text: 'Search',
+              pressed: true,
+              handler: function() {
+                window.location.href = './create-part.html?id='+ idParam +'&search=' + $('#search').val();
+              }
+            }
+          ]
+        })
+      });
+      store.baseParams = {id: idParam, searchText: textSearch};
+      store.load({params:{start:0, limit:20, id:idParam, searchText: textSearch}});
+
+      myMask.show();
+
+      $.ajax({
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': localStorage.getItem('token')
+        },
+        dataType: 'json',
+        url: api_url + '/api/mps/findgroupbyid',
+        data: JSON.stringify({'id': idParam}),
+        success: function(result) {
+          $('#groupName').val(result.groupName);
+          $('#groupType').val(result.groupType);
+          myMask.hide();
+        },
+        error: function(err) {
+          myMask.hide();
+          var resErr = err.responseJSON;
+          if(resErr.message.indexOf('token fail') >= 0) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+          }
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>

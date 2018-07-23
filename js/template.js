@@ -48,6 +48,9 @@ function renderTemplate(content) {
     if(n.leaf && n.id != sn.id) {
       if(n.id == 'create-group') {
         window.location.href = './create-group.html?search=';
+      } 
+      if(n.id == 'select-forecast') {
+        window.location.href = './select-forecast.html?search=';
       }
     }
   });
