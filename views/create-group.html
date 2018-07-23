@@ -23,7 +23,7 @@
 
       var create_group_part_panel = {
         id: 'create-group-part-panel',
-        title: 'Create Group/Part',
+        title: 'Create Group',
         layout: 'column',
         bodyStyle: 'padding:5px',
         defaults: {bodyStyle:'padding:15px'},
@@ -162,7 +162,7 @@
 
       new Ext.grid.GridPanel({
         renderTo: 'gridGroup',
-        height:500,
+        height:540,
         store: store,
         trackMouseOver:false,
         disableSelection:true,
@@ -211,6 +211,7 @@
                 tooltip: 'go to infomation',
                 handler: function(grid, rowIndex, colIndex) {
                   var rec = store.getAt(rowIndex);
+                  window.location.href = './create-part.html?id=' + rec.get('id') + '&search=';
                 }
               }
             ]
