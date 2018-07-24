@@ -55,10 +55,10 @@ function renderTemplate(content) {
     var sn = this.selModel.selNode || {};
     if(n.leaf && n.id != sn.id) {
       if(n.id == 'create-group') {
-        window.location.href = './create-group.html?search=';
+        window.location.href = './mps-create-group.html?search=';
       } 
       if(n.id == 'select-forecast') {
-        window.location.href = './select-forecast.html?search=';
+        window.location.href = './mps-select-forecast.html?search=';
       }
     }
   });
