@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <link rel="stylesheet" href="../ext-3.4.1/ux/css/LockingGridView.css" />
+  <link rel="stylesheet" href="../ext-3.4.1/ux/fileuploadfield/css/fileuploadfield.css"/>
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+  <script src="../ext-3.4.1/ux/LockingGridView.js"></script>
+  <script src="../ext-3.4.1/ux/fileuploadfield/FileUploadField.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+      const shell = require('electron').shell;
+      myMask.show();
+      var idParam = getUrlParameter('id');
+      var dateArr = getUrlParameter('dateT');
+
+      var create_forecast = {
+        id: 'create-forecast-panel',
+        title: 'Create Forecast',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: 1,
+            html: '<div id="gridGroup"></div>'
+          },
+          {
+            columnWidth: 0.1,
+            html: '<div>&nbsp;</div>'
+          },
+          {
+            columnWidth: 0.3,
+            html: '&nbsp;<div id="formUploadInput"></div>'
+          },
+          {
+            columnWidth: 0.1,
+            html: '<div>&nbsp;</div>'
+          },
+          {
+            columnWidth: 0.3,
+            html: '&nbsp;<div id="formUploadForecast"></div>'
+          },
+          {
+            columnWidth: 0.2,
+            html: '<br>&nbsp;<div id="submitBtn"></div>'
+          }
+        ]
+      };
+
+      renderTemplate(create_forecast);
+
+      var dateSplit = dateArr.split(',');
+      var columnT = [
+        {
+          id: 'no',
+          header: '#',
+          dataIndex: 'no',
+          width    : 30,
+          locked: true
+        },
+        {
+          id: 'part',
+          header: 'Part',
+          dataIndex: 'part',
+          width    : 150,
+          locked: true
+        },
+        {
+          id: 'sap',
+          header: 'Code SAP',
+          dataIndex: 'sap',
+          width    : 150,
+          locked: true
+        },
+        {
+          id: 'id',
+          header: 'ID',
+          dataIndex: 'id',
+          width    : 1,
+          hidden: true
+        }
+      ];
+
+      var fieldsStore = [
+        { name: 'id' },
+        { name: 'no' },
+        { name: 'part' },
+        { name: 'sap' }
+      ];
+
+      var i = 0;
+      for(i = 0; i < dateSplit.length -1; i++) {
+        var ob = {
+            id: dateSplit[i],
+            header: dateSplit[i],
+            dataIndex: dateSplit[i],
+            width    : 100,
+            editor: {
+              xtype: 'numberfield'
+            }
+        }
+        columnT.push(ob);
+
+        var ofi = {
+          name: dateSplit[i]
+        }
+        fieldsStore.push(ofi);
+      }
+
+      var store = new Ext.data.JsonStore({
+        fields: fieldsStore,
+        root: 'dataForecast'
+      });
+
+      $.ajax({
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': localStorage.getItem('token')
+        },
+        dataType: 'json',
+        url: api_url + '/api/mps/findgroupbyidanddate',
+        data: JSON.stringify({'id': idParam, 'dateT': dateArr}),
+        success: function(result) {
+          store.loadData(result);
+          myMask.hide();
+        },
+        error: function(err) {
+          myMask.hide();
+          var resErr = err.responseJSON;
+          if(resErr.message.indexOf('token fail') >= 0) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+          }
+        }
+      });
+
+      var grid = new Ext.grid.EditorGridPanel({
+        renderTo: 'gridGroup',
+        height:470,
+        store: store,
+        title:'Data Forecast',
+        clicksToEdit: 1,
+        colModel: new Ext.ux.grid.LockingColumnModel(columnT),
+        view: new Ext.ux.grid.LockingGridView({})
+      });
+
+      var fibasic = new Ext.ux.form.FileUploadField({
+        id: 'fileUpload',
+        renderTo: 'formUploadForecast',
+        width: 180
+      });
+
+      var btnSubmit = new Ext.Button({
+        width: 100,
+        renderTo: 'submitBtn',
+        text: 'Submit',
+        handler: function() {
+
+          Ext.MessageBox.show({
+            msg: 'Saving your data, please wait...',
+            progressText: 'Saving...',
+            width:300,
+            wait:true,
+            waitConfig: {interval:200},
+            icon:'ext-mb-download',
+            animEl: 'mb7'
+          });
+
+          var dataTable = grid.store.data.items;
+          var dataToBackend = {
+            groupId: idParam,
+            dataAll: []
+          };
+
+          dataTable.forEach(function(dataObject) {
+            var dataInput = {
+              id: dataObject.data.id,
+              part: dataObject.data.part,
+              sap: dataObject.data.sap
+            }
+            for(i = 0; i < dateSplit.length -1; i++) {
+              dataInput[dateSplit[i]] = dataObject.data[dateSplit[i]];
+            }
+            dataToBackend.dataAll.push(dataInput);
+          });
+
+          var formData = new FormData();
+          formData.append('data', JSON.stringify(dataToBackend));
+          formData.append('file', $('#fileUpload-file')[0].files[0]);
+
+          $.ajax({
+            type: 'POST',
+            headers: {
+              Accept: 'application/json',
+              Authorization: localStorage.getItem('token')
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: api_url + '/api/mps/createforcast',
+            processData: false,
+            contentType: false,
+            data: formData,
+            success: function(result) {
+              Ext.MessageBox.hide();
+              window.location.href = './mps-detail-forecast.html?no=' + result.forecastNumber;
+            },
+            error: function(err) {
+              Ext.MessageBox.hide();
+              var resErr = err.responseJSON;
+              if(resErr.message.indexOf("Not file upload.") >= 0) {
+                Ext.MessageBox.show({
+                  title: 'Warning',
+                  msg: resErr.message,
+                  buttons: Ext.MessageBox.OK,
+                  animEl: 'mb9',
+                  icon: Ext.MessageBox.WARNING
+                });
+              }
+              if(resErr.message.indexOf('token fail') >= 0) {
+                localStorage.clear();
+                window.location.href = '../login.html';
+              }
+            }
+          });
+        }
+      });
+
+      var formUploadInput = new Ext.FormPanel({
+        renderTo: 'formUploadInput',
+        labelWidth: 75,
+        frame:true,
+        defaults: {width: 150},
+        items: [
+          {
+            xtype: 'fileuploadfield',
+            fieldLabel: 'Import Excel',
+            name: 'importExcel',
+            emptyText: 'Select an excel file',
+            id: 'importExcel',
+            buttonText: 'Import',
+          }
+        ],
+        buttons: [{
+          html: '<a href="#">Download template</a>',
+          handler: function(){
+            shell.openExternal(api_url + '/api/mps/downloadexceltemplate?id=' + idParam + '&dateT=' + dateArr);
+          }
+        },{
+          text: 'Update Data',
+          handler: function(){
+            myMask.show();
+            var formDataUpdate = new FormData();
+            formDataUpdate.append('file', $('#importExcel-file')[0].files[0]);
+
+            $.ajax({
+              type: 'POST',
+              headers: {
+                Accept: 'application/json',
+                Authorization: localStorage.getItem('token')
+              },
+              contentType: "application/json; charset=utf-8",
+              dataType: "json",
+              url: api_url + '/api/mps/updateforecastbyexcelfile',
+              processData: false,
+              contentType: false,
+              data: formDataUpdate,
+              success: function(result) {
+                var dataTable = grid.store.data.items;
+                var newRow = 0;
+                console.log(Object.keys(result.dataForecast[0]));
+                dataTable.forEach(function(dataObject) {
+                  var dataRow = result.dataForecast[newRow];
+                  var listData = Object.keys(dataObject.data);
+                  listData.forEach(function(dataKey) {
+                    var models = grid.getStore().getRange();
+                    models[newRow].set(dataKey, dataRow[dataKey]);
+                  });
+                  newRow++;
+                });
+                myMask.hide();
+              },
+              error: function(err) {
+                myMask.hide();
+                var resErr = err.responseJSON;
+                if(resErr.message.indexOf('token fail') >= 0) {
+                  localStorage.clear();
+                  window.location.href = '../login.html';
+                }
+              }
+            });
+          }
+        }]
+      });
+
+    });
+  </script>
+</body>
+</html>
