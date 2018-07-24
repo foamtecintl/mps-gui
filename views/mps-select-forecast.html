@@ -114,7 +114,7 @@
               tooltip: 'go to infomation',
               handler: function(grid, rowIndex, colIndex) {
                 var rec = store.getAt(rowIndex);
-                window.location.href = './create-date.html?id=' + rec.get('id');
+                window.location.href = './mps-create-date.html?id=' + rec.get('id');
               }
             }
           ]
@@ -141,7 +141,7 @@
             text: 'Search',
             pressed: true,
             handler: function() {
-              window.location.href = './select-forecast.html?search=' + $('#search').val();
+              window.location.href = './mps-select-forecast.html?search=' + $('#search').val();
             }
           }
         ]

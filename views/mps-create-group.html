@@ -110,7 +110,7 @@
               data: JSON.stringify(dataGroup),
               success: function(result) {
                 Ext.MessageBox.hide();
-                window.location.href = './create-group.html?search=' + textSearch;
+                window.location.href = './mps-create-group.html?search=' + textSearch;
               },
               error: function(err) {
                 Ext.MessageBox.hide();
@@ -126,7 +126,7 @@
                 }
                 if(resErr.message.indexOf("token fail") >= 0) {
                   localStorage.clear();
-                  window.location.href = '/login.html';
+                  window.location.href = '../login.html';
                 }
               }
             });
@@ -211,7 +211,7 @@
                 tooltip: 'go to infomation',
                 handler: function(grid, rowIndex, colIndex) {
                   var rec = store.getAt(rowIndex);
-                  window.location.href = './create-part.html?id=' + rec.get('id') + '&search=';
+                  window.location.href = './mps-create-part.html?id=' + rec.get('id') + '&search=';
                 }
               }
             ]
@@ -238,7 +238,7 @@
               text: 'Search',
               pressed: true,
               handler: function() {
-                window.location.href = './create-group.html?search=' + $('#search').val();
+                window.location.href = './mps-create-group.html?search=' + $('#search').val();
               }
             }
           ]

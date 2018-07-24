@@ -138,7 +138,7 @@
               success: function(result) {
                 console.log(result.message)
                 Ext.MessageBox.hide();
-                window.location.href = './create-part.html?id='+ idParam + '&search=';
+                window.location.href = './mps-create-part.html?id='+ idParam + '&search=';
               },
               error: function(err) {
                 Ext.MessageBox.hide();
@@ -256,7 +256,7 @@
                           data: JSON.stringify({'id': rec.get('id')}),
                           success: function(result) {
                             myMask.hide();
-                            window.location.href = './create-part.html?id=' + idParam + '&search=';
+                            window.location.href = './mps-create-part.html?id=' + idParam + '&search=';
                           },
                           error: function(err) {
                             myMask.hide();
