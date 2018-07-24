@@ -41,7 +41,7 @@
         ]
       };
 
-      renderTemplate(create_part_panel);
+      var timer = renderTemplate(create_part_panel);
 
       var formCreatePart = new Ext.FormPanel({
         renderTo: 'formPart',
@@ -156,11 +156,6 @@
                 }
               }
             });
-          }
-        },{
-          text: 'Clear',
-          handler: function() {
-            formCreatePart.getForm().reset();
           }
         }]
       });
@@ -330,6 +325,10 @@
           }
         }
       });
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(3).addClass('x-tree-selected')
+      }, timer + 1);
 
     });
   </script>

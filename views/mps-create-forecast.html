@@ -62,7 +62,7 @@
         ]
       };
 
-      renderTemplate(create_forecast);
+      var timer = renderTemplate(create_forecast);
 
       var dateSplit = dateArr.split(',');
       var columnT = [
@@ -307,6 +307,10 @@
           }
         }]
       });
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(2).addClass('x-tree-selected')
+      }, timer + 1);
 
     });
   </script>

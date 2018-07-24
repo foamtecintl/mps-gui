@@ -52,7 +52,7 @@
         ]
       };
 
-      renderTemplate(create_date);
+      var timer = renderTemplate(create_date);
       
       var storeData = {
         allDates: [
@@ -204,6 +204,10 @@
           }
         }
       });
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(2).addClass('x-tree-selected')
+      }, timer + 1);
 
     });
   </script>

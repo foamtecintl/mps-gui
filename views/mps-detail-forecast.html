@@ -44,7 +44,7 @@
         ]
       };
 
-      renderTemplate(detail_forecast);
+      var timer = renderTemplate(detail_forecast);
 
       var form = new Ext.FormPanel({
         renderTo: 'dataForecast',
@@ -156,7 +156,7 @@
 
           var grid = new Ext.grid.GridPanel({
             renderTo: 'dataTable',
-            height:470,
+            height:540,
             store: store,
             title:'Detail Forecast',
             colModel: new Ext.ux.grid.LockingColumnModel(columnT),
@@ -176,6 +176,10 @@
           }
         }
       });
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(0).addClass('x-tree-selected')
+      }, timer + 1);
 
     });
   </script>

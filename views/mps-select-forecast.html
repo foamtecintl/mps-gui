@@ -40,7 +40,7 @@
         ]
       };
 
-      renderTemplate(select_forecast);
+      var timer = renderTemplate(select_forecast);
 
       var store = new Ext.data.JsonStore({
         fields: [
@@ -151,6 +151,9 @@
     store.baseParams = {searchText: textSearch};
     store.load({params:{start:0, limit:20, searchText: textSearch}});
 
+    setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(2).addClass('x-tree-selected')
+      }, timer + 1);
     });
   </script>
 </body>
