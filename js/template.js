@@ -1,6 +1,9 @@
 var role = localStorage.getItem('role');
 
 function renderTemplate(content) {
+
+  var t0 = performance.now();
+
   var headerBar = new Ext.Panel({
     tbar: ['->',{
       text: localStorage.getItem('username'),
@@ -60,6 +63,9 @@ function renderTemplate(content) {
       if(n.id == 'select-forecast') {
         window.location.href = './mps-select-forecast.html?search=';
       }
+      if(n.id == 'dashborad-group') {
+        window.location.href = './mps-dashborad-group.html?search=';
+      }
     }
   });
 
@@ -86,4 +92,8 @@ function renderTemplate(content) {
       contentPanel
     ]
   });
+
+  var t1 = performance.now();
+  
+  return (t1 - t0);
 }

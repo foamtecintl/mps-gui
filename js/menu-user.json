@@ -3,8 +3,13 @@
     expanded: true,
     iconCls: 'blist',
     children:[{
-        text:'Dashborad',
-        id:'dashborad',
+        text:'Dashborad Group',
+        id:'dashborad-group',
+        leaf:true,
+        iconCls: 'bmenu'
+    },{
+        text:'Dashborad Part',
+        id:'dashborad-part',
         leaf:true,
         iconCls: 'bmenu'
     },{

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+      var textSearch = getUrlParameter('search');
+
+      var dashborad_group_panel = {
+        id: 'dashborad-group-panel-panel',
+        title: 'Dashborad Group',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: .1,
+            html: '<div>&nbsp;</div>'
+          },
+          {
+            columnWidth: .8,
+            html: '<div id="gridDashboard"></div>'
+          },
+          {
+            columnWidth: .1,
+            html: '<div>&nbsp;</div>'
+          }
+        ]
+      };
+
+      var timer = renderTemplate(dashborad_group_panel);
+      
+      var store = new Ext.data.JsonStore({
+        fields: [
+          { name: 'id' },
+          { name: 'no' },
+          { name: 'forecastNo' },
+          { name: 'groupName' },
+          { name: 'totalPart' },
+          { name: 'createDate' }
+        ],
+        root: 'dashborad',
+        totalProperty: 'totalItem',
+        proxy: new Ext.data.HttpProxy({
+          method: 'GET',
+          type: 'json',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': localStorage.getItem('token')
+          },
+          url: api_url + '/api/mps/searchdashboardslimit'
+        })
+      });
+
+      new Ext.grid.GridPanel({
+        renderTo: 'gridDashboard',
+        height:540,
+        store: store,
+        trackMouseOver:false,
+        disableSelection:true,
+        loadMask: true,
+        title:'Forecast History',
+        columns:[
+          {
+            id: 'id',
+            header: 'id',
+            dataIndex: 'id',
+            width    : 10,
+            hidden: true
+          },
+          {
+            id: 'no',
+            header: '#',
+            dataIndex: 'no',
+            width    : 50
+          },
+          {
+            id: 'forecastNo',
+            header: 'Forecast Number',
+            dataIndex: 'forecastNo',
+            width    : 120
+          },
+          {
+            id: 'groupName',
+            header: 'Group Name',
+            dataIndex: 'groupName',
+            sortable: true,
+            width    : 230
+          },
+          {
+            id: 'totalPart',
+            header: 'Total Part',
+            dataIndex: 'totalPart',
+            width    : 80
+          },
+          {
+            id: 'createDate',
+            header: 'Create Date',
+            dataIndex: 'createDate',
+            width    : 130
+          },
+          {
+            xtype: 'actioncolumn',
+            header: 'Detail Forecast',
+            width: 100,
+            items: [
+              {
+                icon: '../images/icon/rss_go.png',
+                tooltip: 'go to infomation',
+                handler: function(grid, rowIndex, colIndex) {
+                  var rec = store.getAt(rowIndex);
+                  window.location.href = './mps-detail-forecast.html?no=' + rec.get('forecastNo');
+                }
+              }
+            ]
+          }
+        ],
+        bbar: new Ext.PagingToolbar({
+          pageSize: 20,
+          store: store,
+          displayInfo: true,
+          displayMsg: 'Displaying data {0} - {1} of {2}',
+          emptyMsg: "No data to display",
+          items: ['-',
+            {
+              xtype: 'textfield',
+              fieldLabel: 'Search',
+              name: 'search',
+              id: 'search',
+              value: textSearch
+            },
+            {
+              xtype: 'button',
+              name: 'btnSearch',
+              id: 'btnSearch',
+              text: 'Search',
+              pressed: true,
+              handler: function() {
+                window.location.href = './mps-dashborad-group.html?search=' + $('#search').val();
+              }
+            }
+          ]
+        })
+      });
+
+      store.baseParams = {searchText: textSearch};
+      store.load({params:{start:0, limit:20, searchText: textSearch}});
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(0).addClass('x-tree-selected')
+      }, timer + 1);
+    });
+  </script>
+</body>
+</html>

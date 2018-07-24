@@ -40,7 +40,7 @@
         ]
       };
 
-      renderTemplate(create_group_part_panel);
+      var timer = renderTemplate(create_group_part_panel);
 
       var formCreateGroup = new Ext.FormPanel({
         renderTo: 'formGroup',
@@ -247,6 +247,10 @@
 
       store.baseParams = {searchText: $('#search').val()};
       store.load({params:{start:0, limit:20, searchText: $('#search').val()}});
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(3).addClass('x-tree-selected')
+      }, timer + 1);
     });
   </script>
 </body>
