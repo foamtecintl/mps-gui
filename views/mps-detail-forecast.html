@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <link rel="stylesheet" href="../ext-3.4.1/ux/css/LockingGridView.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+  <script src="../ext-3.4.1/ux/LockingGridView.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+      var forecastNo = getUrlParameter('no');
+      const shell = require('electron').shell;
+
+      myMask.show();
+      
+      var detail_forecast = {
+        id: 'detail-forecast-panel',
+        title: 'Detail Forecast',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: 0.3,
+            html: '<div id="dataForecast"></div>'
+          },
+          {
+            columnWidth: 0.7,
+            html: '<div id="dataTable"></div>'
+          }
+        ]
+      };
+
+      renderTemplate(detail_forecast);
+
+      var form = new Ext.FormPanel({
+        renderTo: 'dataForecast',
+        labelWidth: 75,
+        title: 'Forecast Detail',
+        frame:true,
+        defaults: {width: 150},
+        items: [
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Forecast No.',
+            name: 'forecastNo',
+            allowBlank: false,
+            id: 'forecastNo',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Group Name',
+            name: 'groupName',
+            allowBlank: false,
+            id: 'groupName',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          },
+          {
+            xtype: 'textfield',
+            fieldLabel: 'Total Part',
+            name: 'totalPart',
+            allowBlank: false,
+            id: 'totalPart',
+            readOnly: true,
+            style: 'background: #ecf0f1;'
+          }
+        ],
+        buttons: [{
+          text: 'Download File',
+          handler: function() {
+            shell.openExternal(api_url + '/api/mps/file/' + forecastNo);
+          }
+        }]
+      });
+
+      $.ajax({
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': localStorage.getItem('token')
+        },
+        dataType: 'json',
+        url: api_url + '/api/mps/findgforecastbyforecastno',
+        data: JSON.stringify({'forecastNo': forecastNo}),
+        success: function(result) {
+          $('#forecastNo').val(result.forecastNo);
+          $('#groupName').val(result.groupName);
+          $('#totalPart').val(result.totalPart);
+
+          var columnT = [
+            {
+              id: 'no',
+              header: '#',
+              dataIndex: 'no',
+              width    : 30,
+              locked: true
+            },
+            {
+              id: 'part',
+              header: 'Part',
+              dataIndex: 'part',
+              width    : 120,
+              locked: true
+            },
+            {
+              id: 'codeSap',
+              header: 'Code SAP',
+              dataIndex: 'codeSap',
+              width    : 120,
+              locked: true
+            }
+          ];
+
+          var fieldsStore = [
+            { name: 'no' },
+            { name: 'part' },
+            { name: 'codeSap' }
+          ];
+
+          var i = 0;
+          for(i = 0; i < result.weeks.length; i++) {
+            var field = {
+              name: result.weeks[i]
+            }
+            fieldsStore.push(field);
+
+            var ofi = {
+              id: result.weeks[i],
+              header: result.weeks[i],
+              dataIndex: result.weeks[i],
+              width    : 100
+            }
+            columnT.push(ofi);
+          }
+
+          var store = new Ext.data.JsonStore({
+            fields: fieldsStore,
+            root: 'dataForecast'
+          });
+
+          var grid = new Ext.grid.GridPanel({
+            renderTo: 'dataTable',
+            height:470,
+            store: store,
+            title:'Detail Forecast',
+            colModel: new Ext.ux.grid.LockingColumnModel(columnT),
+            view: new Ext.ux.grid.LockingGridView({})
+          });
+
+          store.loadData(result);
+
+          myMask.hide();
+        },
+        error: function(err) {
+          myMask.hide();
+          var resErr = err.responseJSON;
+          if(resErr.message.indexOf('token fail') >= 0) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+          }
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>
