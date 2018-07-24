@@ -1,0 +1,21 @@
+[{
+    text:'MPS',
+    expanded: true,
+    iconCls: 'blist',
+    children:[{
+        text:'Dashborad',
+        id:'dashborad',
+        leaf:true,
+        iconCls: 'bmenu'
+    },{
+        text:'Create Forecast',
+        id:'select-forecast',
+        leaf:true,
+        iconCls: 'bmenu'
+    },{
+        text:'Create Group/Part',
+        id:'create-group',
+        leaf:true,
+        iconCls: 'bmenu'
+    }]
+}]
