@@ -1,3 +1,5 @@
+var role = localStorage.getItem('role');
+
 function renderTemplate(content) {
   var headerBar = new Ext.Panel({
     tbar: ['->',{
@@ -25,6 +27,12 @@ function renderTemplate(content) {
     items: [content]
   };
 
+  var menuBar = '../js/menu-user.json';
+
+  if(role == 'Admin') {
+    menuBar = '../js/menu-admin.json';
+  }
+
   var treePanel = new Ext.tree.TreePanel({
     id: 'tree-panel',
     title: 'Menu',
@@ -38,7 +46,7 @@ function renderTemplate(content) {
     singleExpand: true,
     useArrows: true,
     loader: new Ext.tree.TreeLoader({
-      dataUrl:'../js/tree-data.json'
+      dataUrl: menuBar
     }),
     root: new Ext.tree.AsyncTreeNode()
   });
