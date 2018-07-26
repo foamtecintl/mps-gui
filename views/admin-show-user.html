@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+      myMask.show();
+      var id = getUrlParameter('id');
+
+      var admin_show_user_panel = {
+        id: 'admin-show-user-panel',
+        title: 'Admin Show User',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: .6,
+            html: '<div id="showUser"></div>'
+          }
+        ]
+      };
+
+      var timer = renderTemplate(admin_show_user_panel, 'ADMIN');
+
+      var formCreateUser = new Ext.FormPanel({
+        renderTo: 'showUser',
+        labelAlign: 'top',
+        title: 'Information User',
+        frame:true,
+        id: 'formSaveUser',
+        items: [{
+          layout: 'column',
+          items: [
+            {
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'First Name',
+                  name: 'firstName',
+                  id: 'firstName',
+                  anchor:'95%',
+                  allowBlank: false,
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                },
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Employee ID',
+                  name: 'empid',
+                  id: 'empid',
+                  anchor:'95%',
+                  allowBlank: false,
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                },
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Password',
+                  name: 'password',
+                  id: 'password',
+                  anchor:'95%',
+                  allowBlank: false,
+                  value: '**********',
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                },
+                {
+                  xtype: 'combo',
+                  store: [
+                    'MPS',
+                    'MIS'
+                  ],
+                  emptyText:'Select a department...',
+                  fieldLabel: 'Department',
+                  id: 'department',
+                  anchor:'95%',
+                  allowBlank: false,
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Last Name',
+                  name: 'lastName',
+                  id: 'lastName',
+                  anchor:'95%',
+                  allowBlank: false,
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                },
+                {
+                  xtype:'textfield',
+                  vtype:'email',
+                  fieldLabel: 'Email',
+                  name: 'email',
+                  id: 'email',
+                  anchor:'95%',
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                },
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Telephone',
+                  name: 'telephone',
+                  id: 'telephone',
+                  anchor:'95%',
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                },
+                {
+                  xtype: 'combo',
+                  store: [
+                    'User',
+                    'Admin'
+                  ],
+                  emptyText:'Select a role...',
+                  fieldLabel: 'Role',
+                  id: 'role',
+                  anchor:'95%',
+                  allowBlank: false,
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
+                }
+              ]
+            }
+          ]
+        }]
+      });
+
+      $.ajax({
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': localStorage.getItem('token')
+        },
+        dataType: 'json',
+        url: api_url + '/api/admin/finduserbyid',
+        data: JSON.stringify({'id': id}),
+        success: function(result) {
+          $('#firstName').val(result.firstName);
+          $('#lastName').val(result.lastName);
+          $('#empid').val(result.employeeID);
+          $('#email').val(result.email);
+          $('#telephone').val(result.telephone);
+          $('#department').val(result.department);
+          $('#role').val(result.role);
+          myMask.hide();
+        },
+        error: function(err) {
+          myMask.hide();
+          var resErr = err.responseJSON;
+          if(resErr.message.indexOf('token fail') >= 0) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+          }
+        }
+      });
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(1).addClass('x-tree-selected')
+      }, timer + 1);
+    });
+  </script>
+</body>
+</html>

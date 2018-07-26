@@ -18,10 +18,12 @@
   <script src="../js/template.js"></script>
   <script>
     Ext.onReady(function() {
+      myMask.show();
+      var id = getUrlParameter('id');
 
-      var admin_create_user_panel = {
-        id: 'admin-create-user-panel',
-        title: 'Admin Create User',
+      var admin_update_user_panel = {
+        id: 'admin-update-user-panel',
+        title: 'Admin Update User',
         layout: 'column',
         bodyStyle: 'padding:5px',
         defaults: {bodyStyle:'padding:15px'},
@@ -29,19 +31,19 @@
         items: [
           {
             columnWidth: .6,
-            html: '<div id="createUser"></div>'
+            html: '<div id="updateUser"></div>'
           }
         ]
       };
 
-      var timer = renderTemplate(admin_create_user_panel, 'ADMIN');
+      var timer = renderTemplate(admin_update_user_panel, 'ADMIN');
 
-      var formCreateUser = new Ext.FormPanel({
-        renderTo: 'createUser',
+      var formUpdate = new Ext.FormPanel({
+        renderTo: 'updateUser',
         labelAlign: 'top',
-        title: 'Create User',
+        title: 'Update User',
         frame:true,
-        id: 'formSaveUser',
+        id: 'formUpdateUser',
         items: [{
           layout: 'column',
           items: [
@@ -81,7 +83,9 @@
                   name: 'empid',
                   id: 'empid',
                   anchor:'95%',
-                  allowBlank: false
+                  allowBlank: false,
+                  readOnly: true,
+                  style: 'background: #ecf0f1;'
                 }
               ]
             },{
@@ -161,9 +165,9 @@
           ]
         }],
         buttons: [{
-          text: 'Create',
+          text: 'Update',
           handler: function() {
-            formCreateUser.getForm().submit();
+            formUpdate.getForm().submit();
 
             var firstNameU = $('#firstName').val();
             var lastNameU = $('#lastName').val();
@@ -201,7 +205,8 @@
               password: passwordU,
               telephone: telephoneU,
               department: departmentU,
-              role: roleU
+              role: roleU,
+              id: id
             }
 
             Ext.MessageBox.show({
@@ -220,8 +225,8 @@
                 'Content-Type': 'application/json; charset=utf-8',
                 'Authorization': localStorage.getItem('token')
               },
-              dataType: "json",
-              url: api_url + '/api/admin/createuser',
+              dataType: 'json',
+              url: api_url + '/api/admin/updateuser',
               data: JSON.stringify(dataUser),
               success: function(result) {
                 console.log(result.message)
@@ -231,26 +236,53 @@
               error: function(err) {
                 Ext.MessageBox.hide();
                 var resErr = err.responseJSON;
-                Ext.MessageBox.show({
-                  title: 'Warning',
-                  msg: resErr.message,
-                  buttons: Ext.MessageBox.OK,
-                  animEl: 'mb9',
-                  icon: Ext.MessageBox.WARNING
-                });
-                if(resErr.message.indexOf("token fail") >= 0) {
+                if(resErr.message.indexOf('token fail') >= 0) {
                   localStorage.clear();
                   window.location.href = '../login.html';
+                }
+                console.log(resErr.message);
+                if(resErr.message.indexOf('duplicate employee ID') >= 0) {
+                  Ext.MessageBox.show({
+                    title: 'Error',
+                    msg: resErr.message,
+                    buttons: Ext.MessageBox.OK,
+                    animEl: 'mb9',
+                    icon: Ext.MessageBox.ERROR
+                  });
                 }
               }
             });
           }
-        },{
-          text: 'Clear',
-          handler: function() {
-            formCreateUser.getForm().reset();
-          }
         }]
+      });
+
+      $.ajax({
+        type: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': localStorage.getItem('token')
+        },
+        dataType: "json",
+        url: api_url + '/api/admin/finduserbyid',
+        data: JSON.stringify({'id': id}),
+        success: function(result) {
+          $('#firstName').val(result.firstName);
+          $('#lastName').val(result.lastName);
+          $('#empid').val(result.employeeID);
+          $('#email').val(result.email);
+          $('#telephone').val(result.telephone);
+          $('#department').val(result.department);
+          $('#role').val(result.role);
+          myMask.hide();
+        },
+        error: function(err) {
+          myMask.hide();
+          var resErr = err.responseJSON;
+          if(resErr.message.indexOf('token fail') >= 0) {
+            localStorage.clear();
+            window.location.href = '../login.html';
+          }
+        }
       });
 
       setTimeout(function() {
