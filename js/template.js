@@ -129,6 +129,9 @@ function renderTemplate(content, menuTree) {
       if(n.id == 'dashborad-part') {
         window.location.href = './mps-dashborad-part.html?searchPart=';
       }
+      if(n.id == 'create-user') {
+        window.location.href = './admin-create-user.html';
+      }
     }
   });
 
