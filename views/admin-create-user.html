@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MPS</title>
+  <link rel="stylesheet" href="../ext-3.4.1/resources/css/ext-all.css" />
+  <link rel="stylesheet" href="../css/custom.css" />
+  <script src="../ext-3.4.1/adapter/ext/ext-base.js"></script>
+  <script src="../ext-3.4.1/ext-all.js"></script>
+</head>
+<body>
+  <div id="header"></div>
+  <div id="body"></div>
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/config.js"></script>
+  <script src="../js/template.js"></script>
+  <script>
+    Ext.onReady(function() {
+
+      var admin_create_user_panel = {
+        id: 'admin-create-user-panel',
+        title: 'Admin Create User',
+        layout: 'column',
+        bodyStyle: 'padding:5px',
+        defaults: {bodyStyle:'padding:15px'},
+        frame:true,
+        items: [
+          {
+            columnWidth: .6,
+            html: '<div id="createUser"></div>'
+          }
+        ]
+      };
+
+      var timer = renderTemplate(admin_create_user_panel, 'ADMIN');
+
+      var formCreateUser = new Ext.FormPanel({
+        renderTo: 'createUser',
+        labelAlign: 'top',
+        title: 'Create User',
+        frame:true,
+        id: 'formSaveUser',
+        items: [{
+          layout: 'column',
+          items: [
+            {
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'First Name',
+                  name: 'firstName',
+                  id: 'firstName',
+                  anchor:'95%',
+                  allowBlank: false
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Last Name',
+                  name: 'lastName',
+                  id: 'lastName',
+                  anchor:'95%',
+                  allowBlank: false
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Employee ID',
+                  name: 'empid',
+                  id: 'empid',
+                  anchor:'95%',
+                  allowBlank: false
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  vtype:'email',
+                  fieldLabel: 'Email',
+                  name: 'email',
+                  id: 'email',
+                  anchor:'95%'
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Password',
+                  name: 'password',
+                  inputType:'password',
+                  id: 'password',
+                  anchor:'95%',
+                  allowBlank: false
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype:'textfield',
+                  fieldLabel: 'Telephone',
+                  name: 'telephone',
+                  id: 'telephone',
+                  anchor:'95%'
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype: 'combo',
+                  store: [
+                    'MPS',
+                    'MIS'
+                  ],
+                  emptyText:'Select a department...',
+                  fieldLabel: 'Department',
+                  id: 'department',
+                  anchor:'95%',
+                  allowBlank: false
+                }
+              ]
+            },{
+              columnWidth:.5,
+              layout: 'form',
+              items: [
+                {
+                  xtype: 'combo',
+                  store: [
+                    'User',
+                    'Admin'
+                  ],
+                  emptyText:'Select a role...',
+                  fieldLabel: 'Role',
+                  id: 'role',
+                  anchor:'95%',
+                  allowBlank: false
+                }
+              ]
+            }
+          ]
+        }],
+        buttons: [{
+          text: 'Create',
+          handler: function() {
+            formCreateUser.getForm().submit();
+
+            var firstNameU = $('#firstName').val();
+            var lastNameU = $('#lastName').val();
+            var empidU = $('#empid').val();
+            var emailU = $('#email').val();
+            var passwordU = $('#password').val();
+            var telephoneU = $('#telephone').val();
+            var departmentU = $('#department').val();
+            var roleU = $('#role').val();
+
+            if(firstNameU.length < 1) {
+              return false;
+            }
+            if(lastNameU.length < 1) {
+              return false;
+            }
+            if(empidU.length < 1) {
+              return false;
+            }
+            if(passwordU.length < 1) {
+              return false;
+            }
+            if(departmentU.length < 1 || departmentU.indexOf('Select a department...') >= 0) {
+              return false;
+            }
+            if(roleU.length < 1 || roleU.indexOf('Select a role...') >= 0) {
+              return false;
+            }
+
+            var dataUser = {
+              firstName: firstNameU,
+              lastName: lastNameU,
+              employeeId: empidU,
+              email: emailU,
+              password: passwordU,
+              telephone: telephoneU,
+              department: departmentU,
+              role: roleU
+            }
+
+            Ext.MessageBox.show({
+              msg: 'Saving your data, please wait...',
+              progressText: 'Saving...',
+              width:300,
+              wait:true,
+              waitConfig: {interval:200},
+              icon:'ext-mb-download',
+              animEl: 'mb7'
+            });
+
+            $.ajax({
+              type: 'POST',
+              headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Authorization': localStorage.getItem('token')
+              },
+              dataType: "json",
+              url: '{{.api_url}}/api/admin/createuser',
+              data: JSON.stringify(dataUser),
+              success: function(result) {
+                console.log(result.message)
+                Ext.MessageBox.hide();
+                window.location.href = '/admin/showuser?id=' + result.id;
+              },
+              error: function(err) {
+                Ext.MessageBox.hide();
+                var resErr = err.responseJSON;
+                Ext.MessageBox.show({
+                  title: 'Warning',
+                  msg: resErr.message,
+                  buttons: Ext.MessageBox.OK,
+                  animEl: 'mb9',
+                  icon: Ext.MessageBox.WARNING
+                });
+                if(resErr.message.indexOf("token fail") >= 0) {
+                  localStorage.clear();
+                  window.location.href = '/login';
+                }
+              }
+            });
+          }
+        },{
+          text: 'Clear',
+          handler: function() {
+            formCreateUser.getForm().reset();
+          }
+        }]
+      });
+
+      setTimeout(function() {
+        $('.x-tree-node-ct').children().eq(0).addClass('x-tree-selected')
+      }, timer + 1);
+    });
+  </script>
+</body>
+</html>
