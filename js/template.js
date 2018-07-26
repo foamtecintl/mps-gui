@@ -1,6 +1,6 @@
 var role = localStorage.getItem('role');
 
-function renderTemplate(content) {
+function renderTemplate(content, menuTree) {
 
   var t0 = performance.now();
 
@@ -30,10 +30,69 @@ function renderTemplate(content) {
     items: [content]
   };
 
-  var menuBar = '../js/menu-user.json';
+  var expandedMPS = false;
+  var expandedAdmin = false;
+
+  if(menuTree == 'MPS') {
+    expandedMPS = true;
+    expandedAdmin = false;
+  }
+  if(menuTree == 'ADMIN') {
+    expandedMPS = false;
+    expandedAdmin = true;
+  }
+  
+
+  var mpsMenu = {
+    text:'MPS',
+    expanded: expandedMPS,
+    iconCls: 'blist',
+    children:[{
+      text:'Dashborad Group',
+      id:'dashborad-group',
+      leaf:true,
+      iconCls: 'bmenu'
+    },{
+      text:'Dashborad Part',
+      id:'dashborad-part',
+      leaf:true,
+      iconCls: 'bmenu'
+    },{
+      text:'Create Forecast',
+      id:'select-forecast',
+      leaf:true,
+      iconCls: 'bmenu'
+    },{
+      text:'Create Group/Part',
+      id:'create-group',
+      leaf:true,
+      iconCls: 'bmenu'
+    }]
+  };
+
+  var adminMenu = {
+    text:'Admin',
+    expanded: expandedAdmin,
+    iconCls: 'blist',
+    children:[{
+      text:'Create User',
+      id:'create-user',
+      leaf:true,
+      iconCls: 'bmenu'
+    },{
+      text:'User List',
+      id:'userList',
+      leaf:true,
+      iconCls: 'bmenu'
+    }]
+  };
+
+  var menuBar = [];
 
   if(role == 'Admin') {
-    menuBar = '../js/menu-admin.json';
+    menuBar = [mpsMenu,adminMenu];
+  } else {
+    menuBar = [mpsMenu];
   }
 
   var treePanel = new Ext.tree.TreePanel({
@@ -48,10 +107,11 @@ function renderTemplate(content) {
     lines: false,
     singleExpand: true,
     useArrows: true,
-    loader: new Ext.tree.TreeLoader({
-      dataUrl: menuBar
-    }),
-    root: new Ext.tree.AsyncTreeNode()
+    loader: new Ext.tree.TreeLoader(),
+    root: new Ext.tree.AsyncTreeNode({
+      expanded: true,
+      children: menuBar
+    })
   });
 
   treePanel.on('click', function(n){
@@ -65,6 +125,9 @@ function renderTemplate(content) {
       }
       if(n.id == 'dashborad-group') {
         window.location.href = './mps-dashborad-group.html?search=';
+      }
+      if(n.id == 'dashborad-part') {
+        window.location.href = './mps-dashborad-part.html?searchPart=';
       }
     }
   });
