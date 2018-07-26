@@ -20,9 +20,9 @@
     Ext.onReady(function() {
       var textSearch = getUrlParameter('search');
 
-      var dashborad_group_panel = {
-        id: 'dashborad-group-panel-panel',
-        title: 'Dashborad Group',
+      var dashborad_part_panel = {
+        id: 'dashborad-part-panel-panel',
+        title: 'Dashborad Part',
         layout: 'column',
         bodyStyle: 'padding:5px',
         defaults: {bodyStyle:'padding:15px'},
@@ -34,7 +34,7 @@
           },
           {
             columnWidth: .8,
-            html: '<div id="gridDashboard"></div>'
+            html: '<div id="gridPart"></div>'
           },
           {
             columnWidth: .1,
@@ -43,19 +43,17 @@
         ]
       };
 
-      var timer = renderTemplate(dashborad_group_panel, 'MPS');
+      var timer = renderTemplate(dashborad_part_panel, 'MPS');
       
-      var store = new Ext.data.JsonStore({
+      var storePart = new Ext.data.JsonStore({
         fields: [
           { name: 'id' },
           { name: 'no' },
-          { name: 'forecastNo' },
-          { name: 'groupName' },
-          { name: 'totalPart' },
-          { name: 'createDate' }
+          { name: 'part' },
+          { name: 'groupName' }
         ],
-        root: 'dashborad',
-        totalProperty: 'totalItem',
+        root: 'dashboardPart',
+        totalProperty: 'totalItemPart',
         proxy: new Ext.data.HttpProxy({
           method: 'GET',
           type: 'json',
@@ -63,18 +61,18 @@
             'Content-Type': 'application/json; charset=utf-8',
             'Authorization': localStorage.getItem('token')
           },
-          url: api_url + '/api/mps/searchdashboardslimit'
+          url: api_url + '/api/mps/searchdashboardspartlimit'
         })
       });
 
       new Ext.grid.GridPanel({
-        renderTo: 'gridDashboard',
+        renderTo: 'gridPart',
         height:540,
-        store: store,
+        store: storePart,
         trackMouseOver:false,
         disableSelection:true,
         loadMask: true,
-        title:'Forecast History',
+        title:'Part History Forecast',
         columns:[
           {
             id: 'id',
@@ -90,33 +88,21 @@
             width    : 50
           },
           {
-            id: 'forecastNo',
-            header: 'Forecast Number',
-            dataIndex: 'forecastNo',
-            width    : 120
+            id: 'part',
+            header: 'Part Number',
+            dataIndex: 'part',
+            width    : 250
           },
           {
             id: 'groupName',
             header: 'Group Name',
             dataIndex: 'groupName',
             sortable: true,
-            width    : 230
-          },
-          {
-            id: 'totalPart',
-            header: 'Total Part',
-            dataIndex: 'totalPart',
-            width    : 80
-          },
-          {
-            id: 'createDate',
-            header: 'Create Date',
-            dataIndex: 'createDate',
-            width    : 130
+            width    : 200
           },
           {
             xtype: 'actioncolumn',
-            header: 'Detail Forecast',
+            header: 'History Forecast',
             width: 100,
             items: [
               {
@@ -124,7 +110,6 @@
                 tooltip: 'go to infomation',
                 handler: function(grid, rowIndex, colIndex) {
                   var rec = store.getAt(rowIndex);
-                  window.location.href = './mps-detail-forecast.html?no=' + rec.get('forecastNo');
                 }
               }
             ]
@@ -132,7 +117,7 @@
         ],
         bbar: new Ext.PagingToolbar({
           pageSize: 20,
-          store: store,
+          store: storePart,
           displayInfo: true,
           displayMsg: 'Displaying data {0} - {1} of {2}',
           emptyMsg: "No data to display",
@@ -140,29 +125,29 @@
             {
               xtype: 'textfield',
               fieldLabel: 'Search',
-              name: 'search',
-              id: 'search',
+              name: 'searchPart',
+              id: 'searchPart',
               value: textSearch
             },
             {
               xtype: 'button',
-              name: 'btnSearch',
-              id: 'btnSearch',
+              name: 'btnSearchPart',
+              id: 'btnSearchPart',
               text: 'Search',
               pressed: true,
               handler: function() {
-                window.location.href = './mps-dashborad-group.html?search=' + $('#search').val();
+                window.location.href = './mps-dashborad-part.html?searchPart=' + $('#searchPart').val();
               }
             }
           ]
         })
       });
 
-      store.baseParams = {searchText: textSearch};
-      store.load({params:{start:0, limit:20, searchText: textSearch}});
+      storePart.baseParams = {searchText: textSearch};
+      storePart.load({params:{start:0, limit:20, searchText: textSearch}});
 
       setTimeout(function() {
-        $('.x-tree-node-ct').children().eq(0).addClass('x-tree-selected')
+        $('.x-tree-node-ct').children().eq(1).addClass('x-tree-selected')
       }, timer + 1);
     });
   </script>
