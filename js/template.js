@@ -81,7 +81,7 @@ function renderTemplate(content, menuTree) {
       iconCls: 'bmenu'
     },{
       text:'User List',
-      id:'userList',
+      id:'user-list',
       leaf:true,
       iconCls: 'bmenu'
     }]
@@ -131,6 +131,9 @@ function renderTemplate(content, menuTree) {
       }
       if(n.id == 'create-user') {
         window.location.href = './admin-create-user.html';
+      }
+      if(n.id == 'user-list') {
+        window.location.href = './admin-list-user.html?searchPart=';
       }
     }
   });
