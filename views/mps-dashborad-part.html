@@ -109,7 +109,8 @@
                 icon: '../images/icon/rss_go.png',
                 tooltip: 'go to infomation',
                 handler: function(grid, rowIndex, colIndex) {
-                  var rec = store.getAt(rowIndex);
+                  var rec = storePart.getAt(rowIndex);
+                  window.location.href = './mps-compare-forecast.html?part=' + rec.get('part');
                 }
               }
             ]
