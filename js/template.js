@@ -127,13 +127,13 @@ function renderTemplate(content, menuTree) {
         window.location.href = './mps-dashborad-group.html?search=';
       }
       if(n.id == 'dashborad-part') {
-        window.location.href = './mps-dashborad-part.html?searchPart=';
+        window.location.href = './mps-dashborad-part.html?search=';
       }
       if(n.id == 'create-user') {
         window.location.href = './admin-create-user.html';
       }
       if(n.id == 'user-list') {
-        window.location.href = './admin-list-user.html?searchPart=';
+        window.location.href = './admin-list-user.html?search=';
       }
     }
   });
