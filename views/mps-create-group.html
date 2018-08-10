@@ -160,6 +160,235 @@
         })
       });
 
+      var columsTable = [
+        {
+          id: 'id',
+          header: 'id',
+          dataIndex: 'id',
+          width    : 10,
+          hidden: true
+        },
+        {
+          id: 'no',
+          header: '#',
+          dataIndex: 'no',
+          width    : 50
+        },
+        {
+          id: 'groupName',
+          header: 'Group Name',
+          dataIndex: 'groupName',
+          sortable: true,
+          width    : 200
+        },
+        {
+          id: 'typeName',
+          header: 'Type Name',
+          dataIndex: 'typeName',
+          width    : 150
+        },
+        {
+          id: 'totalPart',
+          header: 'Total Part',
+          dataIndex: 'totalPart',
+          width    : 70
+        },
+        {
+          xtype: 'actioncolumn',
+          header: 'Add Part',
+          width: 70,
+          items: [
+            {
+              icon: '../images/icon/rss_go.png',
+              tooltip: 'go to infomation',
+              handler: function(grid, rowIndex, colIndex) {
+                var rec = store.getAt(rowIndex);
+                window.location.href = './mps-create-part.html?id=' + rec.get('id') + '&search=';
+              }
+            }
+          ]
+        },
+        {
+          xtype: 'actioncolumn',
+          header: 'Edit Group',
+          width: 70,
+          items: [
+            {
+              icon: '../images/icon/cog_edit.png',
+              tooltip: 'go to infomation',
+              handler: function(grid, rowIndex, colIndex) {
+                var rec = store.getAt(rowIndex);
+
+                var formEditGroup = new Ext.FormPanel({
+                  labelWidth: 75,
+                  title: 'Edit Group',
+                  frame:true,
+                  defaults: {width: 150},
+                  items: [
+                    {
+                      xtype: 'textfield',
+                      fieldLabel: 'Group Name',
+                      name: 'groupEdit',
+                      emptyText:'Enter group name ...',
+                      allowBlank: false,
+                      id: 'groupNameEdit'
+                    },
+                    {
+                      xtype: 'combo',
+                      store: [
+                        'Electronic',
+                        'Automotive',
+                        'General'
+                      ],
+                      emptyText:'Select a type...',
+                      fieldLabel: 'Type Name',
+                      id: 'typeNameEdit'
+                    }
+                  ],
+                  buttons: [{
+                    text: 'Edit Group',
+                    handler: function() {
+                      Ext.MessageBox.show({
+                        msg: 'Saving your data, please wait...',
+                        progressText: 'Saving...',
+                        width:300,
+                        wait:true,
+                        waitConfig: {interval:200},
+                        icon:'ext-mb-download',
+                        animEl: 'mb7'
+                      });
+
+                      var dataEditGroup = {
+                        idGroup: rec.get('id'),
+                        groupName: $('#groupNameEdit').val(),
+                        groupType: $('#typeNameEdit').val()
+                      }
+
+                      $.ajax({
+                        type: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json; charset=utf-8',
+                          'Authorization': localStorage.getItem('token')
+                        },
+                        dataType: "json",
+                        url: api_url + '/api/mps/editgroup',
+                        data: JSON.stringify(dataEditGroup),
+                        success: function(result) {
+                          Ext.MessageBox.hide();
+                          window.location.href = './mps-create-group.html?search=' + textSearch;
+                        },
+                        error: function(err) {
+                          Ext.MessageBox.hide();
+                          var resErr = err.responseJSON;
+                          if(resErr.message.indexOf("save fail") >= 0) {
+                            Ext.MessageBox.show({
+                              title: 'Warning',
+                              msg: resErr.message,
+                              buttons: Ext.MessageBox.OK,
+                              animEl: 'mb9',
+                              icon: Ext.MessageBox.WARNING
+                            });
+                          }
+                          if(resErr.message.indexOf("token fail") >= 0) {
+                            localStorage.clear();
+                            window.location.href = '../login.html';
+                          }
+                        }
+                      });                      
+                    }
+                  }]
+                });
+                
+                var win = new Ext.Window({
+                  layout:'column',
+                  width:330,
+                  height:150,
+                  items: [formEditGroup]
+                });
+
+                $.ajax({
+                  type: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Authorization': localStorage.getItem('token')
+                  },
+                  dataType: 'json',
+                  url: api_url + '/api/mps/findgroupbyid',
+                  data: JSON.stringify({'id': rec.get('id')}),
+                  success: function(result) {
+                    $('#groupNameEdit').val(result.groupName);
+                    $('#typeNameEdit').val(result.groupType);
+                    myMask.hide();
+                  },
+                  error: function(err) {
+                    myMask.hide();
+                    var resErr = err.responseJSON;
+                    if(resErr.message.indexOf('token fail') >= 0) {
+                      localStorage.clear();
+                      window.location.href = '../login.html';
+                    }
+                  }
+                });
+                win.show();
+              }
+            }
+          ]
+        }
+      ]
+
+      if(role == 'Admin') {
+
+        var deleteGroup = {
+          xtype: 'actioncolumn',
+          header: 'Delete Group',
+          width: 90,
+          items: [
+            {
+              icon: '../images/icon/delete.gif',
+              tooltip: 'go to infomation',
+              handler: function(grid, rowIndex, colIndex) {
+                var rec = store.getAt(rowIndex);
+                Ext.MessageBox.show({
+                  title: 'Confirm',
+                  msg: 'Are you sure you want to delete group ' + rec.get('groupName') + '?',
+                  buttons: Ext.MessageBox.OKCANCEL,
+                  animEl: 'mb9',
+                  icon: Ext.MessageBox.QUESTION,
+                  fn: function(btn){
+                    if(btn == 'ok'){
+                      myMask.show();
+                      $.ajax({
+                        type: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json; charset=utf-8',
+                          'Authorization': localStorage.getItem('token')
+                        },
+                        dataType: 'json',
+                        url: api_url + '/api/mps/deletegroup',
+                        data: JSON.stringify({'id': rec.get('id')}),
+                        success: function(result) {
+                          myMask.hide();
+                          window.location.href = './mps-create-group.html?search=';
+                        },
+                        error: function(err) {
+                          myMask.hide();
+                          var resErr = err.responseJSON;
+                          if(resErr.message.indexOf('token fail') >= 0) {
+                            localStorage.clear();
+                            window.location.href = '../login.html';
+                          }
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          ]
+        }
+        columsTable.push(deleteGroup);
+      }
+
       new Ext.grid.GridPanel({
         renderTo: 'gridGroup',
         height:540,
@@ -168,55 +397,7 @@
         disableSelection:true,
         loadMask: true,
         title:'Group list',
-        columns:[
-          {
-            id: 'id',
-            header: 'id',
-            dataIndex: 'id',
-            width    : 10,
-            hidden: true
-          },
-          {
-            id: 'no',
-            header: '#',
-            dataIndex: 'no',
-            width    : 50
-          },
-          {
-            id: 'groupName',
-            header: 'Group Name',
-            dataIndex: 'groupName',
-            sortable: true,
-            width    : 200
-          },
-          {
-            id: 'typeName',
-            header: 'Type Name',
-            dataIndex: 'typeName',
-            width    : 150
-          },
-          {
-            id: 'totalPart',
-            header: 'Total Part',
-            dataIndex: 'totalPart',
-            width    : 130
-          },
-          {
-            xtype: 'actioncolumn',
-            header: 'Add Part',
-            width: 90,
-            items: [
-              {
-                icon: '../images/icon/rss_go.png',
-                tooltip: 'go to infomation',
-                handler: function(grid, rowIndex, colIndex) {
-                  var rec = store.getAt(rowIndex);
-                  window.location.href = './mps-create-part.html?id=' + rec.get('id') + '&search=';
-                }
-              }
-            ]
-          }
-        ],
+        columns: columsTable,
         bbar: new Ext.PagingToolbar({
           pageSize: 20,
           store: store,

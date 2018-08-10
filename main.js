@@ -5,7 +5,7 @@ const path = require('path')
 let mainWindow
 
 function createMainWindow() {
-  mainWindow = new BrowserWindow({width: 1300, height: 750})
+  mainWindow = new BrowserWindow({width: 1200, height: 750})
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, '/login.html'),
     protocol: 'file:',
