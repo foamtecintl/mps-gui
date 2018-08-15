@@ -1,4 +1,5 @@
 var role = localStorage.getItem('role');
+var username = localStorage.getItem('username');
 
 function renderTemplate(content, menuTree) {
 
@@ -6,7 +7,7 @@ function renderTemplate(content, menuTree) {
 
   var headerBar = new Ext.Panel({
     tbar: ['->',{
-      text: localStorage.getItem('username'),
+      text: username,
       iconCls: 'user',
       id: 'menuLoginLogout',
       menu: [{
@@ -70,6 +71,23 @@ function renderTemplate(content, menuTree) {
     }]
   };
 
+  var visitorMenu = {
+    text:'MPS Visitor',
+    expanded: expandedMPS,
+    iconCls: 'blist',
+    children:[{
+      text:'Dashborad Forecast',
+      id:'dashborad-group',
+      leaf:true,
+      iconCls: 'bmenu'
+    },{
+      text:'Dashborad Part',
+      id:'dashborad-part',
+      leaf:true,
+      iconCls: 'bmenu'
+    }]
+  };
+
   var adminMenu = {
     text:'Admin',
     expanded: expandedAdmin,
@@ -88,10 +106,14 @@ function renderTemplate(content, menuTree) {
   };
 
   var menuBar = [];
-
-  if(role == 'Admin') {
+  if(role === 'Admin') {
     menuBar = [mpsMenu,adminMenu];
-  } else {
+  } 
+  if(role === 'Visitor') {
+    menuBar = [visitorMenu]
+  } 
+  if (role === 'User') {
+    alert(role);
     menuBar = [mpsMenu];
   }
 

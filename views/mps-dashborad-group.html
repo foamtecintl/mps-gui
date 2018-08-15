@@ -67,6 +67,114 @@
         })
       });
 
+      var columsTable = [
+        {
+          id: 'id',
+          header: 'id',
+          dataIndex: 'id',
+          width    : 10,
+          hidden: true
+        },
+        {
+          id: 'no',
+          header: '#',
+          dataIndex: 'no',
+          width    : 50
+        },
+        {
+          id: 'forecastNo',
+          header: 'Forecast Number',
+          dataIndex: 'forecastNo',
+          width    : 120
+        },
+        {
+          id: 'groupName',
+          header: 'Group Name',
+          dataIndex: 'groupName',
+          sortable: true,
+          width    : 230
+        },
+        {
+          id: 'totalPart',
+          header: 'Total Part',
+          dataIndex: 'totalPart',
+          width    : 80
+        },
+        {
+          id: 'createDate',
+          header: 'Create Date',
+          dataIndex: 'createDate',
+          width    : 130
+        },
+        {
+          xtype: 'actioncolumn',
+          header: 'Detail Forecast',
+          width: 90,
+          items: [
+            {
+              icon: '../images/icon/rss_go.png',
+              tooltip: 'go to infomation',
+              handler: function(grid, rowIndex, colIndex) {
+                var rec = store.getAt(rowIndex);
+                window.location.href = './mps-detail-forecast.html?no=' + rec.get('forecastNo');
+              }
+            }
+          ]
+        }
+      ]
+
+      if(username == 'admin') {
+        var deleteForecast = {
+          xtype: 'actioncolumn',
+          header: 'Delete Forecast',
+          width: 90,
+          items: [
+            {
+              icon: '../images/icon/delete.gif',
+              tooltip: 'go to infomation',
+              handler: function(grid, rowIndex, colIndex) {
+                var rec = store.getAt(rowIndex);
+                Ext.MessageBox.show({
+                  title: 'Confirm',
+                  msg: 'Are you sure you want to delete forecast ' + rec.get('id') + '?',
+                  buttons: Ext.MessageBox.OKCANCEL,
+                  animEl: 'mb9',
+                  icon: Ext.MessageBox.QUESTION,
+                  fn: function(btn){
+                    if(btn == 'ok'){
+                      myMask.show();
+                      $.ajax({
+                        type: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json; charset=utf-8',
+                          'Authorization': localStorage.getItem('token')
+                        },
+                        dataType: 'json',
+                        url: api_url + '/api/mps/deleteforecast',
+                        data: JSON.stringify({'id': rec.get('id')}),
+                        success: function(result) {
+                          myMask.hide();
+                          window.location.href = './mps-dashborad-group.html?search=';
+                        },
+                        error: function(err) {
+                          myMask.hide();
+                          var resErr = err.responseJSON;
+                          if(resErr.message.indexOf('token fail') >= 0) {
+                            localStorage.clear();
+                            window.location.href = '../login.html';
+                          }
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          ]
+        }
+        columsTable.push(deleteForecast);
+      }
+
       new Ext.grid.GridPanel({
         renderTo: 'gridDashboard',
         height:540,
@@ -74,62 +182,8 @@
         trackMouseOver:false,
         disableSelection:true,
         loadMask: true,
-        title:'Forecast History',
-        columns:[
-          {
-            id: 'id',
-            header: 'id',
-            dataIndex: 'id',
-            width    : 10,
-            hidden: true
-          },
-          {
-            id: 'no',
-            header: '#',
-            dataIndex: 'no',
-            width    : 50
-          },
-          {
-            id: 'forecastNo',
-            header: 'Forecast Number',
-            dataIndex: 'forecastNo',
-            width    : 120
-          },
-          {
-            id: 'groupName',
-            header: 'Group Name',
-            dataIndex: 'groupName',
-            sortable: true,
-            width    : 230
-          },
-          {
-            id: 'totalPart',
-            header: 'Total Part',
-            dataIndex: 'totalPart',
-            width    : 80
-          },
-          {
-            id: 'createDate',
-            header: 'Create Date',
-            dataIndex: 'createDate',
-            width    : 130
-          },
-          {
-            xtype: 'actioncolumn',
-            header: 'Detail Forecast',
-            width: 100,
-            items: [
-              {
-                icon: '../images/icon/rss_go.png',
-                tooltip: 'go to infomation',
-                handler: function(grid, rowIndex, colIndex) {
-                  var rec = store.getAt(rowIndex);
-                  window.location.href = './mps-detail-forecast.html?no=' + rec.get('forecastNo');
-                }
-              }
-            ]
-          }
-        ],
+        title: 'Forecast History',
+        columns: columsTable,
         bbar: new Ext.PagingToolbar({
           pageSize: 20,
           store: store,
