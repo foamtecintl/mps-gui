@@ -113,7 +113,6 @@ function renderTemplate(content, menuTree) {
     menuBar = [visitorMenu]
   } 
   if (role === 'User') {
-    alert(role);
     menuBar = [mpsMenu];
   }
 
